@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trajet</title>
+<meta name="theme-color" content="#1F4E5F">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg">
+<link rel="apple-touch-icon" href="icons/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EFF3F1;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --muted:#647178;
+    --primary:#1F4E5F;
+    --primary-ink:#EAF3F1;
+    --accent:#E4572E;
+    --accent-ink:#FFF6F2;
+    --alert:#C23B22;
+    --alert-bg:#FBEAE6;
+    --success:#2F8F5B;
+    --success-bg:#E7F3EC;
+    --line:#E1E7E5;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Manrope',system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:90px;
+  }
+  #app{max-width:520px;margin:0 auto;padding:18px 16px 8px;}
+  h1,h2,h3{margin:0;}
+  p{margin:0;}
+  .hidden{display:none !important;}
+
+  /* Top bar */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .topbar .greeting{font-size:15px;color:var(--muted);}
+  .topbar .clock{font-size:15px;font-weight:700;color:var(--primary);}
+  .icon-btn{background:var(--surface);border:1px solid var(--line);border-radius:12px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;}
+
+  /* Mode switch */
+  .mode-switch{display:flex;gap:8px;margin-bottom:16px;}
+  .mode-btn{flex:1;padding:10px 8px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .mode-btn.active{background:var(--primary);color:var(--primary-ink);border-color:var(--primary);}
+
+  /* Hero card */
+  .hero{
+    background:var(--primary);
+    color:var(--primary-ink);
+    border-radius:24px;
+    padding:22px 20px;
+    margin-bottom:14px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero .badge{
+    display:inline-block;background:rgba(255,255,255,.14);
+    padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;
+    margin-bottom:10px;
+  }
+  .hero .lead{font-size:16px;line-height:1.4;margin-bottom:14px;}
+  .hero .train-row{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;}
+  .hero .train-time{font-size:44px;font-weight:800;letter-spacing:-1px;}
+  .hero .train-sub{font-size:14px;opacity:.85;}
+  .hero .train-details{font-size:14px;opacity:.9;line-height:1.5;margin-top:8px;}
+  .hero .margin-chip{
+    display:inline-flex;align-items:center;gap:6px;margin-top:12px;
+    background:rgba(255,255,255,.14);padding:6px 12px;border-radius:999px;font-size:13px;font-weight:700;
+  }
+
+  /* Alert banner */
+  .alert{
+    background:var(--alert-bg);color:var(--alert);border-radius:16px;padding:12px 14px;
+    font-size:14px;font-weight:700;margin-bottom:14px;display:flex;gap:8px;align-items:flex-start;
+  }
+  .stale{
+    background:#FFF3E0;color:#9A6A00;border-radius:14px;padding:8px 12px;font-size:12.5px;
+    margin-bottom:14px;font-weight:600;
+  }
+
+  /* Info cards */
+  .card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:12px;border:1px solid var(--line);}
+  .card .row{display:flex;justify-content:space-between;align-items:center;}
+  .card .label{font-size:13px;color:var(--muted);font-weight:600;}
+  .card .value{font-size:15px;font-weight:700;}
+  .card + .card{margin-top:0;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .grid2 .card{margin-bottom:0;}
+
+  .other-trains{margin-top:10px;}
+  .other-trains .t{display:flex;justify-content:space-between;padding:8px 0;border-top:1px dashed var(--line);font-size:14px;}
+  .other-trains .t:first-child{border-top:none;}
+
+  .arrival-picker{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .chip{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:14px;cursor:pointer;}
+  .chip.selected{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+
+  .section-title{font-size:13px;font-weight:800;text-transform:none;color:var(--muted);margin:18px 0 10px;}
+
+  /* Buttons */
+  .btn{display:block;width:100%;padding:14px;border-radius:14px;border:none;background:var(--primary);color:var(--primary-ink);font-weight:700;font-size:15px;cursor:pointer;text-align:center;}
+  .btn.secondary{background:var(--surface);color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost{background:transparent;color:var(--muted);}
+
+  /* Settings form */
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .field input, .field select{
+    width:100%;padding:12px 12px;border-radius:12px;border:1px solid var(--line);
+    font-size:15px;font-family:inherit;background:var(--surface);color:var(--ink);
+  }
+  .field .hint{font-size:12px;color:var(--muted);margin-top:5px;}
+  .field .locbtn{margin-top:8px;font-size:13px;padding:8px 10px;border-radius:10px;background:var(--bg);border:1px solid var(--line);cursor:pointer;font-weight:700;}
+  fieldset{border:none;padding:0;margin:0 0 22px;}
+  legend{font-size:16px;font-weight:800;margin-bottom:12px;padding:0;}
+
+  .tabbar{
+    position:fixed;bottom:0;left:0;right:0;background:var(--surface);
+    border-top:1px solid var(--line);display:flex;max-width:520px;margin:0 auto;
+  }
+  .tab{flex:1;padding:12px 0 calc(10px + env(safe-area-inset-bottom));text-align:center;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;}
+  .tab.active{color:var(--primary);}
+  .tab .ico{font-size:20px;display:block;margin-bottom:2px;}
+
+  .screen{display:none;}
+  .screen.active{display:block;}
+
+  .weather-line{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin-bottom:12px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ===================== ONBOARDING ===================== -->
+  <section id="screen-onboarding" class="screen">
+    <h2 style="font-size:22px;font-weight:800;margin-bottom:4px;">Bienvenue</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:20px;">On configure ton trajet une bonne fois pour toutes. Tu pourras tout modifier plus tard dans les réglages.</p>
+    <form id="form-onboarding">
+      <fieldset>
+        <legend>🏠 Maison</legend>
+        <div class="field">
+          <label>Adresse du domicile</label>
+          <input type="text" id="ob-home-address" placeholder="12 rue des Peupliers, ..." required>
+          <button type="button" class="locbtn" data-locfor="home">📍 Utiliser ma position actuelle</button>
+        </div>
+        <div class="field">
+          <label>Nom exact de la gare de départ</label>
+          <input type="text" id="ob-home-station" placeholder="ex : Douai" required>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>🏫 Lycée</legend>
+        <div class="field">
+          <label>Nom du lycée</label>
+          <input type="text" id="ob-lycee-name" placeholder="Lycée ..." required>
+        </div>
+        <div class="field">
+          <label>Adresse du lycée</label>
+          <input type="text" id="ob-lycee-address" placeholder="..." required>
+          <button type="button" class="locbtn" data-locfor="lycee">📍 Utiliser ma position actuelle</button>
+        </div>
+        <div class="field">
+          <label>Nom exact de la gare d'arrivée</label>
+          <input type="text" id="ob-lycee-station" placeholder="ex : Lille Flandres" required>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>🚶 Trajets à pied de chaque gare</legend>
+        <div class="field">
+          <label>Temps maison → gare de départ (minutes)</label>
+          <input type="number" id="ob-time-home-station" min="1" required>
+        </div>
+        <div class="field">
+          <label>Mode pour ce trajet</label>
+          <select id="ob-mode-home-station">
+            <option value="walk">À pied</option>
+            <option value="car">En voiture</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Temps gare d'arrivée → lycée (minutes)</label>
+          <input type="number" id="ob-time-station-lycee" min="1" required>
+        </div>
+        <div class="field">
+          <label>Mode pour ce trajet</label>
+          <select id="ob-mode-station-lycee">
+            <option value="walk">À pied</option>
+            <option value="car">En voiture</option>
+          </select>
+        </div>
+      </fieldset>
+
+      <button type="submit" class="btn">Continuer</button>
+    </form>
+  </section>
+
+  <!-- ===================== MAIN SCREEN ===================== -->
+  <section id="screen-main" class="screen">
+    <div class="topbar">
+      <div>
+        <div class="greeting" id="greeting-text">Bonjour</div>
+        <div class="clock" id="clock-text">--:--</div>
+      </div>
+      <button class="icon-btn" id="btn-refresh" title="Actualiser">↻</button>
+    </div>
+
+    <div class="mode-switch">
+      <button class="mode-btn" id="mode-home" data-mode="home">🏠 Maison</button>
+      <button class="mode-btn" id="mode-lycee" data-mode="lycee">🏫 Lycée</button>
+    </div>
+
+    <div id="weather-line" class="weather-line">☀️ Météo indisponible</div>
+
+    <div id="stale-banner" class="stale hidden"></div>
+    <div id="alert-banner" class="alert hidden"></div>
+
+    <div class="hero" id="hero-card">
+      <span class="badge" id="hero-badge">Trajet du matin</span>
+      <p class="lead" id="hero-lead">Chargement de ton emploi du temps…</p>
+      <div id="hero-train-block"></div>
+    </div>
+
+    <div id="arrival-section" class="card hidden">
+      <div class="label">Heure d'arrivée souhaitée au lycée</div>
+      <div class="arrival-picker" id="arrival-options"></div>
+    </div>
+
+    <div id="other-trains-card" class="card hidden">
+      <div class="label" style="margin-bottom:6px;">Autres trains possibles</div>
+      <div class="other-trains" id="other-trains-list"></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="label">Premier cours</div>
+        <div class="value" id="info-first-course">--</div>
+      </div>
+      <div class="card">
+        <div class="label">Dernier cours</div>
+        <div class="value" id="info-last-course">--</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SETTINGS ===================== -->
+  <section id="screen-settings" class="screen">
+    <h2 style="font-size:20px;font-weight:800;margin-bottom:16px;">Réglages</h2>
+    <form id="form-settings">
+      <fieldset>
+        <legend>🏠 Maison</legend>
+        <div class="field"><label>Adresse</label><input type="text" id="st-home-address"></div>
+        <div class="field"><label>Gare de départ</label><input type="text" id="st-home-station"></div>
+      </fieldset>
+      <fieldset>
+        <legend>🏫 Lycée</legend>
+        <div class="field"><label>Nom du lycée</label><input type="text" id="st-lycee-name"></div>
+        <div class="field"><label>Adresse</label><input type="text" id="st-lycee-address"></div>
+        <div class="field"><label>Gare d'arrivée</label><input type="text" id="st-lycee-station"></div>
+      </fieldset>
+      <fieldset>
+        <legend>🚶 Trajets</legend>
+        <div class="field"><label>Maison → gare (minutes)</label><input type="number" id="st-time-home-station" min="1"></div>
+        <div class="field"><label>Mode</label><select id="st-mode-home-station"><option value="walk">À pied</option><option value="car">En voiture</option></select></div>
+        <div class="field"><label>Gare → lycée (minutes)</label><input type="number" id="st-time-station-lycee" min="1"></div>
+        <div class="field"><label>Mode</label><select id="st-mode-station-lycee"><option value="walk">À pied</option><option value="car">En voiture</option></select></div>
+      </fieldset>
+      <fieldset>
+        <legend>⏱️ Marges</legend>
+        <div class="field">
+          <label>Marge avant le cours (minutes, min. 10)</label>
+          <input type="number" id="st-margin-class" min="10">
+        </div>
+        <div class="field">
+          <label>Marge de sécurité avant le départ du train (minutes)</label>
+          <input type="number" id="st-margin-departure" min="0">
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>📚 Pronote</legend>
+        <div class="field">
+          <label>URL de la passerelle Pronote</label>
+          <input type="text" id="st-pronote-url" placeholder="https://ton-service.onrender.com">
+          <div class="hint">Fournie par le petit service que tu déploies séparément (voir le dossier "gateway"). Laisse vide pour saisir ton emploi du temps à la main.</div>
+        </div>
+        <div class="field">
+          <label>Jeton d'accès à la passerelle</label>
+          <input type="text" id="st-pronote-token">
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>🚆 SNCF</legend>
+        <div class="field">
+          <label>Clé API SNCF (api.sncf.com, gratuite)</label>
+          <input type="text" id="st-sncf-key">
+          <div class="hint">Crée un compte gratuit sur api.sncf.com depuis ton téléphone pour l'obtenir.</div>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>🔔 Notifications</legend>
+        <div class="field">
+          <label><input type="checkbox" id="st-notifications" style="width:auto;margin-right:8px;">Activer les notifications de retard/suppression</label>
+          <div class="hint">Fonctionne uniquement quand l'appli est ouverte à l'écran (aucun serveur de notification n'est utilisé, conformément à tes contraintes de confidentialité).</div>
+        </div>
+      </fieldset>
+      <button type="submit" class="btn">Enregistrer</button>
+      <button type="button" id="btn-reset" class="btn ghost" style="margin-top:10px;">Réinitialiser toutes les données</button>
+    </form>
+  </section>
+
+  <div class="tabbar" id="tabbar">
+    <div class="tab active" data-screen="screen-main"><span class="ico">🚆</span>Trajet</div>
+    <div class="tab" data-screen="screen-settings"><span class="ico">⚙️</span>Réglages</div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

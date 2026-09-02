@@ -1,0 +1,13 @@
+{
+  "name": "Trajet — compagnon mobilité",
+  "short_name": "Trajet",
+  "description": "Compagnon quotidien maison-gare-lycée : trains, Pronote, météo.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#EFF3F1",
+  "theme_color": "#1F4E5F",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
